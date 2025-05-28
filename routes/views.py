@@ -90,9 +90,9 @@ def plan_route(request):
                 optimized_route = OptimizedRoute.objects.create(
                     route_request=route_request,
                     route_data=route_data,
-                    distance=float(optimal_route.get('estimated_distance', '0').replace(' km', '').replace(',', '.')),
-                    duration=int(optimal_route.get('estimated_time', '0').replace(' minutes', '').replace(' min', '')),
-                    cost_estimate=float(optimal_route.get('cost_estimate', '0').replace(' FCFA', '').replace(',', ''))
+                    distance=optimal_route.get('estimated_distance', 0),
+                    duration=optimal_route.get('estimated_time', 0),
+                    cost_estimate=optimal_route.get('cost_estimate', 0)
                 )
                 
                 messages.success(request, f"Itinéraire optimisé avec succès! Distance: {optimized_route.distance} km, Durée: {optimized_route.duration} min")
@@ -401,9 +401,9 @@ def optimize_route_ajax(request):
         optimized_route = OptimizedRoute.objects.create(
             route_request=route_request,
             route_data=route_data,
-            distance=float(optimal_route.get('estimated_distance', '0').replace(' km', '').replace(',', '.')),
-            duration=int(optimal_route.get('estimated_time', '0').replace(' minutes', '').replace(' min', '')),
-            cost_estimate=float(optimal_route.get('cost_estimate', '0').replace(' FCFA', '').replace(',', ''))
+            distance=optimal_route.get('estimated_distance', 0),
+            duration=optimal_route.get('estimated_time', 0),
+            cost_estimate=optimal_route.get('cost_estimate', 0)
         )
         
         return JsonResponse({
