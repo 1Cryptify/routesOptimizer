@@ -5,7 +5,7 @@
 {% block content %}
 <div class="row">
     <div class="col-md-8">
-        <h2>Votre itinéraire optimisé</h2>
+        <h2>itinéraire minimal en tout temps(ligne droite)</h2>
         <div class="border rounded" style="height: 500px; overflow: hidden;">
             {{ map_html|safe }}
         </div>
@@ -22,7 +22,7 @@
                 <hr>
                 <p><strong>🕒 Durée estimée:</strong> {{ optimized_route.duration }} minutes</p>
                 <p><strong>📏 Distance:</strong> {{ optimized_route.distance }} km</p>
-                <p><strong>💰 Coût estimé:</strong> {{ optimized_route.cost_estimate }} FCFA</p>
+                <p><strong>💰 Coût estimé:</strong> {{ optimized_route.cost_estimate }} </p>
             </div>
         </div>
 
