@@ -1,0 +1,48 @@
+# Django Framework
+Django>=5.0.0,<5.1.0
+django-extensions>=3.2.0
+
+# Intelligence Artificielle - Google Gemini
+google-generativeai>=0.3.0
+
+# Cartes et géolocalisation
+folium>=0.14.0
+requests>=2.31.0
+
+# Variables d'environnement
+python-dotenv>=1.0.0
+
+# Base de données (PostgreSQL pour production)
+psycopg2-binary>=2.9.0
+
+# Gestion des images
+Pillow>=10.0.0
+
+# Serveur de fichiers statiques (production)
+whitenoise>=6.5.0
+
+# Sécurité
+django-cors-headers>=4.3.0
+
+# Développement et debug
+django-debug-toolbar>=4.2.0
+
+# Tests
+coverage>=7.3.0
+factory-boy>=3.3.0
+
+# Formatage et qualité du code (optionnel)
+black>=23.0.0
+flake8>=6.0.0
+isort>=5.12.0
+
+# Deployment (optionnel)
+gunicorn>=21.2.0
+dj-database-url>=2.1.0
+
+# Monitoring et logs (optionnel)
+sentry-sdk>=1.38.0
+
+# Utilitaires
+python-dateutil>=2.8.0
+pytz>=2023.3
