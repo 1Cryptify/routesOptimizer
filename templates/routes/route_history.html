@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}Mon historique - Transport Optimizer{% endblock %}
+
+{% block content %}
+<h2>Mon historique de routes</h2>
+
+<div class="row">
+    {% for route in routes %}
+        <div class="col-md-6 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        {{ route.route_request.departure.name }} → {{ route.route_request.destination.name }}
+                    </h5>
+                    <p class="card-text">
+                        <strong>Mode:</strong> {{ route.route_request.get_transport_mode_display }}<br>
+                        <strong>Distance:</strong> {{ route.distance }} km<br>
+                        <strong>Durée:</strong> {{ route.duration }} min<br>
+                        <strong>Coût:</strong> {{ route.cost_estimate }} FCFA
+                    </p>
+                    <small class="text-muted">{{ route.created_at }}</small>
+                    <div class="mt-2">
+                        <a href="{% url 'routes:route_result' route.id %}" class="btn btn-sm btn-primary">
+                            Voir détails
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div class="col-12">
+            <div class="text-center">
+                <p>Aucune route dans votre historique</p>
+                <a href="{% url 'routes:plan_route' %}" class="btn btn-primary">
+                    Planifier votre première route
+                </a>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

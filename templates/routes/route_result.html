@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}Résultat - Transport Optimizer{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <h2>Votre itinéraire optimisé</h2>
+        <div class="border rounded" style="height: 500px; overflow: hidden;">
+            {{ map_html|safe }}
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>📊 Informations du trajet</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>De:</strong> {{ route_data.departure.address }}</p>
+                <p><strong>Vers:</strong> {{ route_data.destination.address }}</p>
+                <p><strong>Mode:</strong> {{ optimized_route.route_request.get_transport_mode_display }}</p>
+                <hr>
+                <p><strong>🕒 Durée estimée:</strong> {{ optimized_route.duration }} minutes</p>
+                <p><strong>📏 Distance:</strong> {{ optimized_route.distance }} km</p>
+                <p><strong>💰 Coût estimé:</strong> {{ optimized_route.cost_estimate }} FCFA</p>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6>🎯 Recommandations IA</h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    {% for recommendation in route_data.ai_analysis.recommendations %}
+                        <li>• {{ recommendation }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        {% if route_data.ai_analysis.points_of_interest %}
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6>🏛️ Points d'intérêt</h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    {% for poi in route_data.ai_analysis.points_of_interest %}
+                        <li>• {{ poi }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="d-grid gap-2 mt-3">
+            <a href="{% url 'routes:plan_route' %}" class="btn btn-primary">
+                🗺️ Nouveau trajet
+            </a>
+            <a href="{% url 'routes:index' %}" class="btn btn-outline-secondary">
+                ← Retour à la carte
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

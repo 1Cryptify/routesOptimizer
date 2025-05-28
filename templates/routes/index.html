@@ -1,0 +1,210 @@
+{% extends 'base.html' %}
+
+{% block title %}Carte des routes - Transport Optimizer{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <h2>Carte interactive</h2>
+        <div class="border rounded" style="height: 500px; overflow: hidden;">
+            {{ map_html|safe }}
+        </div>
+    </div>
+    <div class="col-md-4">
+        <h3>Actions rapides</h3>
+        <div class="d-grid gap-2">
+            <a href="{% url 'routes:plan_route' %}" class="btn btn-primary">
+                🗺️ Planifier un trajet
+            </a>
+            <a href="{% url 'routes:add_location' %}" class="btn btn-success">
+                📍 Ajouter un lieu
+            </a>
+        </div>
+        
+        <h4 class="mt-4">Statistiques</h4>
+        <div class="card">
+            <div class="card-body">
+                <p><strong>Lieux:</strong> {{ stats.total_locations }}</p>
+                <p><strong>Routes calculées:</strong> {{ stats.total_routes }}</p>
+            </div>
+        </div>
+        
+        <h4 class="mt-4">Lieux enregistrés ({{ locations.count }})</h4>
+        <div class="list-group" style="max-height: 300px; overflow-y: auto;">
+            {% for location in locations %}
+                <div class="list-group-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1">{{ location.name }}</h6>
+                            <small class="text-muted">{{ location.address }}</small>
+                        </div>
+                        <small class="text-muted">{{ location.created_at|date:"d/m/Y" }}</small>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="list-group-item text-center text-muted">
+                    <p class="mb-1">Aucun lieu enregistré</p>
+                    <small>Commencez par ajouter votre premier lieu</small>
+                </div>
+            {% endfor %}
+        </div>
+        
+        {% if locations %}
+        <div class="mt-2">
+            <a href="{% url 'routes:location_list' %}" class="btn btn-outline-primary btn-sm w-100">
+                📋 Gérer tous les lieux ({{ locations.count }})
+            </a>
+        </div>
+        {% endif %}
+        
+        {% if stats.recent_routes %}
+        <h4 class="mt-4">Routes récentes</h4>
+        <div class="list-group">
+            {% for route in stats.recent_routes %}
+                <div class="list-group-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <small><strong>{{ route.route_request.departure.name }}</strong> → <strong>{{ route.route_request.destination.name }}</strong></small>
+                            <br>
+                            <small class="text-muted">{{ route.distance }} km • {{ route.duration }} min • {{ route.cost_estimate }} €</small>
+                        </div>
+                        <small class="text-muted">{{ route.created_at|date:"d/m H:i" }}</small>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal pour ajouter un lieu -->
+<div class="modal fade" id="addLocationModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Ajouter un nouveau lieu</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="locationForm">
+                    <div class="mb-3">
+                        <label class="form-label">Nom du lieu</label>
+                        <input type="text" class="form-control" id="locationName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Adresse</label>
+                        <input type="text" class="form-control" id="locationAddress" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <label class="form-label">Latitude</label>
+                            <input type="number" step="any" class="form-control" id="locationLat" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Longitude</label>
+                            <input type="number" step="any" class="form-control" id="locationLon" required>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" onclick="saveLocation()">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function addLocation() {
+    const modal = new bootstrap.Modal(document.getElementById('addLocationModal'));
+    modal.show();
+}
+
+ffunction saveLocation() {
+    const formData = {
+        name: document.getElementById('locationName').value,
+        address: document.getElementById('locationAddress').value,
+        latitude: parseFloat(document.getElementById('locationLat').value),
+        longitude: parseFloat(document.getElementById('locationLon').value)
+    };
+
+    // Validation des données
+    if (!formData.name || !formData.address || !formData.latitude || !formData.longitude) {
+        alert('Veuillez remplir tous les champs');
+        return;
+    }
+
+    fetch('{% url "routes:add_location_ajax" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Lieu ajouté avec succès!');
+            location.reload();
+        } else {
+            alert('Erreur lors de l\'ajout du lieu: ' + (data.error || 'Erreur inconnue'));
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        alert('Erreur de connexion');
+    });
+}
+
+// Fonction pour formater les prix en FCFA
+function formatPrice(amount) {
+    return new Intl.NumberFormat('fr-CM', {
+        style: 'currency',
+        currency: 'XAF',
+        minimumFractionDigits: 0
+    }).format(amount);
+}
+
+// Fonction pour rechercher des lieux
+function searchLocations(query) {
+    if (query.length < 2) return;
+    
+    fetch(`{% url "routes:search_locations" %}?q=${encodeURIComponent(query)}`)
+    .then(response => response.json())
+    .then(data => {
+        displaySearchResults(data.locations);
+    })
+    .catch(error => {
+        console.error('Erreur de recherche:', error);
+    });
+}
+
+function displaySearchResults(locations) {
+    const resultsContainer = document.getElementById('searchResults');
+    if (!resultsContainer) return;
+    
+    resultsContainer.innerHTML = '';
+    
+    locations.forEach(location => {
+        const div = document.createElement('div');
+        div.className = 'search-result-item';
+        div.innerHTML = `
+            <h5>${location.name}</h5>
+            <p>${location.address}</p>
+            <small>Lat: ${location.coordinates[0]}, Lon: ${location.coordinates[1]}</small>
+        `;
+        div.onclick = () => selectLocation(location);
+        resultsContainer.appendChild(div);
+    });
+}
+
+function selectLocation(location) {
+    // Logique pour sélectionner un lieu
+    console.log('Lieu sélectionné:', location);
+}
+</script>
+{% endblock %}
